@@ -1,0 +1,195 @@
+DSA 11
+
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Node structure for BST
+struct Node {
+    int key;
+    string value;
+    Node* left;
+    Node* right;
+    
+    Node(int k, string v) : key(k), value(v), left(nullptr), right(nullptr) {}
+};
+
+class Dictionary {
+private:
+    Node* root;
+    int comparisons;
+
+    Node* insertHelper(Node* node, int key, string value) {
+        if (!node) return new Node(key, value);
+        if (key < node->key)
+            node->left = insertHelper(node->left, key, value);
+        else if (key > node->key)
+            node->right = insertHelper(node->right, key, value);
+        else
+            node->value = value;
+        return node;
+    }
+
+    Node* deleteHelper(Node* node, int key) {
+        if (!node) return nullptr;
+        if (key < node->key)
+            node->left = deleteHelper(node->left, key);
+        else if (key > node->key)
+            node->right = deleteHelper(node->right, key);
+        else {
+            if (!node->left) {
+                Node* temp = node->right;
+                delete node;
+                return temp;
+            }
+            else if (!node->right) {
+                Node* temp = node->left;
+                delete node;
+                return temp;
+            }
+            Node* temp = minValueNode(node->right);
+            node->key = temp->key;
+            node->value = temp->value;
+            node->right = deleteHelper(node->right, temp->key);
+        }
+        return node;
+    }
+
+    Node* minValueNode(Node* node) {
+        Node* current = node;
+        while (current && current->left)
+            current = current->left;
+        return current;
+    }
+
+    Node* searchHelper(Node* node, int key) {
+        comparisons++;
+        if (!node || node->key == key) return node;
+        if (key < node->key)
+            return searchHelper(node->left, key);
+        return searchHelper(node->right, key);
+    }
+
+    void inorderHelper(Node* node) {
+        if (node) {
+            inorderHelper(node->left);
+            cout << "Key: " << node->key << ", Value: " << node->value << endl;
+            inorderHelper(node->right);
+        }
+    }
+
+    void reverseInorderHelper(Node* node) {
+        if (node) {
+            reverseInorderHelper(node->right);
+            cout << "Key: " << node->key << ", Value: " << node->value << endl;
+            reverseInorderHelper(node->left);
+        }
+    }
+
+public:
+    Dictionary() : root(nullptr), comparisons(0) {}
+
+    void add(int key, string value) {
+        root = insertHelper(root, key, value);
+    }
+
+    void remove(int key) {
+        root = deleteHelper(root, key);
+    }
+
+    void update(int key, string newValue) {
+        Node* node = searchHelper(root, key);
+        if (node) node->value = newValue;
+        else cout << "Key not found!" << endl;
+    }
+
+    void displayAscending() {
+        if (!root) cout << "Dictionary is empty!" << endl;
+        else inorderHelper(root);
+    }
+
+    void displayDescending() {
+        if (!root) cout << "Dictionary is empty!" << endl;
+        else reverseInorderHelper(root);
+    }
+
+    int getComparisons(int key) {
+        comparisons = 0;
+        searchHelper(root, key);
+        return comparisons;
+    }
+};
+
+int main() {
+    Dictionary dict;
+    int choice, key;
+    string value;
+
+    while (true) {
+        cout << "\nDictionary Menu:\n";
+        cout << "1. Add a key-value pair\n";
+        cout << "2. Delete a key\n";
+        cout << "3. Update a value\n";
+        cout << "4. Display in ascending order\n";
+        cout << "5. Display in descending order\n";
+        cout << "6. Get comparisons for a key\n";
+        cout << "7. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        if (choice == 7) break;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter key (integer): ";
+                cin >> key;
+                cout << "Enter value (string): ";
+                cin.ignore();
+                getline(cin, value);
+                dict.add(key, value);
+                cout << "Added successfully!\n";
+                break;
+
+            case 2:
+                cout << "Enter key to delete: ";
+                cin >> key;
+                dict.remove(key);
+                cout << "Deleted successfully!\n";
+                break;
+
+            case 3:
+                cout << "Enter key to update: ";
+                cin >> key;
+                cout << "Enter new value: ";
+                cin.ignore();
+                getline(cin, value);
+                dict.update(key, value);
+                break;
+
+            case 4:
+                cout << "Dictionary in ascending order:\n";
+                dict.displayAscending();
+                break;
+
+            case 5:
+                cout << "Dictionary in descending order:\n";
+                dict.displayDescending();
+                break;
+
+            case 6: {
+                cout << "Enter key to search: ";
+                cin >> key;
+                int comp = dict.getComparisons(key);
+                cout << "Comparisons for key " << key << ": " << comp << endl;
+                break;
+            }
+
+            default:
+                cout << "Invalid choice! Try again.\n";
+        }
+    }
+
+    cout << "Program exited.\n";
+    return 0;
+}
