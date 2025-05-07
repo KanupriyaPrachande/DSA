@@ -1,0 +1,122 @@
+#include <iostream> 
+#include <vector> 
+#include <queue> 
+#include <set> 
+using namespace std; 
+ 
+class Graph { 
+    int V; 
+    vector<vector<pair<int, int>>> adj; 
+ 
+public: 
+    Graph(int n) { 
+        V = n; 
+        adj.resize(V); 
+    } 
+ 
+    void addEdge(int from, int to, int distance) { 
+        adj[from].push_back({to, distance}); 
+        adj[to].push_back({from, distance}); 
+    } 
+ 
+    vector<int> dijkstra(int source) { 
+        const int INF = 100000; 
+        vector<int> dist(V, INF); 
+        dist[source] = 0; 
+ 
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, 
+int>>> pq; 
+        pq.push({0, source}); 
+ 
+        while (!pq.empty()) { 
+            int u = pq.top().second; 
+            int d = pq.top().first; 
+            pq.pop(); 
+ 
+            if (d > dist[u]) continue; 
+ 
+            for (auto& neighbor : adj[u]) { 
+                int v = neighbor.first; 
+                int weight = neighbor.second; 
+                if (dist[u] + weight < dist[v]) { 
+                    dist[v] = dist[u] + weight; 
+                    pq.push({dist[v], v}); 
+                } 
+            } 
+        } 
+ 
+        return dist; 
+    } 
+ 
+    void findRoutes(int source, int destination, int min_distance, int max_distance) { 
+        set<vector<int>> uniqueRoutes; 
+        vector<bool> visited(V, false); 
+        vector<int> path; 
+        dfsFindPaths(source, destination, visited, path, min_distance, max_distance, 
+uniqueRoutes); 
+ 
+        cout << "Found " << uniqueRoutes.size() << " unique routes:\n"; 
+        for (auto& route : uniqueRoutes) { 
+            for (int city : route) 
+                cout << city << " "; 
+            cout << endl; 
+        } 
+    } 
+ 
+    void dfsFindPaths(int current, int destination, vector<bool>& visited, 
+vector<int>& path,  
+                      int min_distance, int max_distance, set<vector<int>>& 
+uniqueRoutes) { 
+        if (current == destination) { 
+            int total_distance = path.size() - 1; 
+            if (total_distance >= min_distance && total_distance <= max_distance) { 
+                uniqueRoutes.insert(path); 
+            } 
+            return; 
+        } 
+ 
+        visited[current] = true; 
+        for (auto& neighbor : adj[current]) { 
+            int nextCity = neighbor.first; 
+            if (!visited[nextCity]) { 
+                path.push_back(nextCity); 
+                dfsFindPaths(nextCity, destination, visited, path, min_distance, 
+max_distance, uniqueRoutes); 
+                path.pop_back(); 
+            } 
+        } 
+        visited[current] = false; 
+    } 
+}; 
+ 
+int main() { 
+    int cities, routes; 
+    cout << "Enter number of cities: "; 
+    cin >> cities; 
+ 
+    Graph g(cities); 
+ 
+    cout << "Enter number of bus routes: "; 
+    cin >> routes; 
+ 
+    int from, to, cost; 
+    for (int i = 0; i < routes; i++) { 
+        cout << "Enter route " << i + 1 << " (From City To City Cost): "; 
+        cin >> from >> to >> cost; 
+        g.addEdge(from, to, cost); 
+    } 
+ 
+    int source, destination; 
+    cout << "Enter the starting city and destination city: "; 
+    cin >> source >> destination; 
+ 
+    vector<int> dist = g.dijkstra(source); 
+    int min_distance = dist[destination]; 
+ 
+    cout << "Shortest distance from " << source << " to " << destination << ": " << 
+min_distance << endl; 
+ 
+    g.findRoutes(source, destination, min_distance, min_distance + 1); 
+ 
+    return 0; 
+} 
