@@ -1,0 +1,111 @@
+from collections import deque
+class Graph:
+    def __init__(self, vertices):
+        self.V = vertices
+        self.graph = {i: [] for i in range(vertices)}
+    def add_edge(self, u, v):
+        self.graph[u].append(v)
+        self.graph[v].append(u)
+    # ---------------- DFS RECURSIVE ----------------
+    def dfs_recursive(self, start, visited=None):
+        if visited is None:
+            visited = set()
+        visited.add(start)
+        print(start, end=" ")
+        for neighbor in self.graph[start]:
+            if neighbor not in visited:
+                self.dfs_recursive(neighbor, visited)
+        return visited
+    # ---------------- DFS ITERATIVE ----------------
+    def dfs_iterative(self, start):
+        visited = set()
+        stack = [start]
+        while stack:
+            vertex = stack.pop()
+            if vertex not in visited:
+                print(vertex, end=" ")
+                visited.add(vertex)
+                for neighbor in reversed(self.graph[vertex]):
+                    if neighbor not in visited:
+                        stack.append(neighbor)
+        return visited
+    # ---------------- BFS ITERATIVE ----------------
+    def bfs_iterative(self, start):
+        visited = set()
+        queue = deque([start])
+        visited.add(start)
+        while queue:
+            vertex = queue.popleft()
+            print(vertex, end=" ")
+            for neighbor in self.graph[vertex]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return visited
+    # ---------------- BFS RECURSIVE ----------------
+    def bfs_recursive(self, queue, visited):
+        if not queue:
+            return visited
+        vertex = queue.popleft()
+        print(vertex, end=" ")
+        for neighbor in self.graph[vertex]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+        return self.bfs_recursive(queue, visited)
+# ---------------- COMPLEXITY DISPLAY ----------------
+def display_complexity(algo, b, d):
+    print("\n📊 Complexity Analysis (Using b & d):")
+    print(f"Branching Factor (b): {b}")
+    print(f"Depth (d): {d}")
+    if algo == "DFS":
+        print("Time Complexity  : O(b^d)")
+        print("Space Complexity : O(bd)")
+    elif algo == "BFS":
+        print("Time Complexity  : O(b^d)")
+        print("Space Complexity : O(b^d)")
+def main():
+    print("    GRAPH TRAVERSAL PROGRAM     ")
+    vertices = int(input("Enter number of vertices: "))
+    edges = int(input("Enter number of edges: "))
+    g = Graph(vertices)
+    print("\nEnter edges (u v):")
+    for _ in range(edges):
+        u, v = map(int, input().split())
+        g.add_edge(u, v)
+    b = int(input("\nEnter Branching Factor (b): "))
+    d = int(input("Enter Depth (d): "))
+    while True:
+        print("\n  MENU ")
+        print("1. DFS (Recursive)")
+        print("2. DFS (Iterative)")
+        print("3. BFS (Iterative)")
+        print("4. BFS (Recursive)")
+        print("5. Exit")
+        choice = int(input("Enter your choice: "))
+        if choice == 5:
+            print("Exiting Program 🚀")
+            break
+        start = int(input("Enter starting vertex: "))
+        print("\nTraversal Order:")
+        if choice == 1:
+            visited = g.dfs_recursive(start)
+            display_complexity("DFS", b, d)
+        elif choice == 2:
+            visited = g.dfs_iterative(start)
+            display_complexity("DFS", b, d)
+        elif choice == 3:
+            visited = g.bfs_iterative(start)
+            display_complexity("BFS", b, d)
+        elif choice == 4:
+            visited = set([start])
+            queue = deque([start])
+            visited = g.bfs_recursive(queue, visited)
+            display_complexity("BFS", b, d)
+        else:
+            print("Invalid Choice ❌")
+            continue
+        print(f"\nTotal Visited Nodes: {len(visited)}")
+        print("============================\n")
+if __name__ == "__main__":
+    main()
